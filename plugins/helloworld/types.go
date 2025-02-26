@@ -3,6 +3,7 @@ package helloworld
 import (
 	"fmt"
 	"gothstack/app/db"
+	"math/rand/v2"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,8 +28,9 @@ type HelloworldMessage struct {
 
 func createMessage(message string) (HelloworldMessage, error) {
 	fmt.Println(message)
+	message = fmt.Sprintf("Hello world! %d", rand.IntN(100))
 	hello := HelloworldMessage{
-		Message: "Hello world!",
+		Message: message,
 	}
 	result := db.Get().Create(&hello)
 	return hello, result.Error

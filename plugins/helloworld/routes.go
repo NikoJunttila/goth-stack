@@ -23,7 +23,7 @@ import (
 func InitRoutes(router chi.Router, authConfig kit.AuthenticationConfig) {
 	// Public endpoint - no authentication required
 	router.Get("/hello", kit.Handler(handleHello))
-
+	router.Get("/hello/read", kit.Handler(handleReadHello))
 	// Protected endpoint - authentication required
 	// Using router.Group to apply authentication middleware
 	router.Group(func(auth chi.Router) {
