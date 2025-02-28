@@ -36,14 +36,14 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 	<form hx-post="/login" class="flex flex-col gap-4">
 		<div class="flex flex-col gap-1">
 			<label for="email">Email *</label>
-			<input { inputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }/>
+			<input { components.InputAttrs(errors.Has("email"))... } name="email" id="email" value={ values.Email }/>
 			if errors.Has("email") {
 				<div class="text-red-500 text-xs">{ errors.Get("email")[0] }</div>
 			}
 		</div>
 		<div class="flex flex-col gap-1">
 			<label for="password">Password *</label>
-			<input { inputAttrs(errors.Has("password"))... } type="password" name="password" id="password"/>
+			<input { components.InputAttrs(errors.Has("password"))... } type="password" name="password" id="password"/>
 			if errors.Has("password") {
 				<ul class="list-disc ml-4">
 					for _, err := range errors.Get("password") {
@@ -58,27 +58,8 @@ templ LoginForm(values LoginFormValues, errors v.Errors) {
 				<div class="text-red-500 text-xs">{ errors.Get("verified")[0] }</div>
 			}
 		</div>
-		<button { buttonAttrs()... }>
+		<button { components.ButtonAttrs()... }>
 			Login
 		</button>
 	</form>
-}
-
-func buttonAttrs() templ.Attributes {
-	class := "inline-flex text-primary-foreground items-center justify-center px-4 py-2 font-medium text-sm tracking-wide transition-colors duration-200 rounded-md bg-primary text-foreground hover:bg-primary/90 focus:ring focus:ring-primary focus:shadow-outline focus:outline-none"
-	return templ.Attributes{
-		"class": class,
-	}
-}
-
-func inputAttrs(hasError bool) templ.Attributes {
-	class := "flex w-full px-3 py-2 bg-transparent text-sm border rounded-md ring-offset-background placeholder:text-neutral-500 focus:border-neutral-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-	if hasError {
-		class += " border-red-500"
-	} else {
-		class += " border-input"
-	}
-	return templ.Attributes{
-		"class": class,
-	}
 }

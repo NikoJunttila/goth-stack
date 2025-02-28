@@ -3,6 +3,7 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 module.exports = {
  	content: [ "./**/*.html", "./**/*.templ", "./**/*.go", ],
 	safelist: [],
+  darkMode:"class",
 	theme: {
 		container: {
 			center: true,
@@ -18,6 +19,14 @@ module.exports = {
 				ring: "hsl(var(--ring) / <alpha-value>)",
 				background: "hsl(var(--background) / <alpha-value>)",
 				foreground: "hsl(var(--foreground) / <alpha-value>)",
+        neutral:[
+       		400: '#f3f4f6',
+					500: '#e5e7eb',
+					600: '#d1d5db',
+					700: '#9ca3af',
+					800: '#6b7280',
+					900: '#4b5563' 
+        ],
 				primary: {
 					DEFAULT: "hsl(var(--primary) / <alpha-value>)",
 					foreground: "hsl(var(--primary-foreground) / <alpha-value>)"

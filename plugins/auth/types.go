@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"gothstack/app/db"
 	"database/sql"
+	"gothstack/app/db"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -70,3 +70,9 @@ type Session struct {
 	CreatedAt time.Time
 	User      User
 }
+
+// using goose to init table
+/* func initialize() {
+	db.Get().AutoMigrate(&Session{}, &User{})
+}
+*/

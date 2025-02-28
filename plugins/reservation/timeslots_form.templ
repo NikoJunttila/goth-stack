@@ -1,0 +1,56 @@
+package reservation
+
+import (
+    "gothstack/app/views/components"
+	v "github.com/anthdm/superkit/validate"
+    "gothstack/app/views/layouts"
+)
+
+templ CreateTimeSlotForm(values TimeSlotFormValues, errors v.Errors) {
+    @layouts.BaseLayout() {
+    @components.Navigation()
+    <div class="container mx-auto p-4 max-w-md">
+        <h1 class="text-2xl font-bold mb-4">Create New Time Slot</h1>
+        
+        if values.SuccessMessage != "" {
+            @components.SuccessAlert(values.SuccessMessage)
+        }
+        
+        <form hx-post="/admin/timeslots/create" hx-swap="outerHTML" class="space-y-4">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input { components.InputAttrs(errors.Has("title"))... } type="text" id="title" name="title" value={ values.Title } 
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+            
+            @TimeSlotDateTimeFields(values, errors)
+            
+            <div>
+                <label for="capacity" class="block text-sm font-medium text-gray-700">Capacity</label>
+                <input { components.InputAttrs(errors.Has("capacity"))... } type="number" id="capacity" name="capacity" value={ values.Capacity } min="1"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                <p class="text-xs text-gray-500 mt-1">Maximum number of reservations allowed for this time slot</p>
+            </div>
+            
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Create Time Slot
+                </button>
+            </div>
+        </form>
+    </div>
+    }}
+
+templ TimeSlotDateTimeFields(values TimeSlotFormValues, errors v.Errors) {
+    <div>
+        <label for="startTime" class="block text-sm font-medium text-gray-700">Start Time</label>
+        <input { components.InputAttrs(errors.Has("capacity"))... } type="datetime-local" id="startTime" name="startTime" value={ values.StartTime }
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+    </div>
+    
+    <div>
+        <label for="endTime" class="block text-sm font-medium text-gray-700">End Time</label>
+        <input { components.InputAttrs(errors.Has("capacity"))... } type="datetime-local" id="endTime" name="endTime" value={ values.EndTime }
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+    </div>
+}

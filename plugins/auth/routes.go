@@ -10,7 +10,6 @@ func InitializeRoutes(router chi.Router, authConfig kit.AuthenticationConfig) {
 		AuthFunc:    AuthenticateUser,
 		RedirectURL: "/login",
 	} */
-
 	// Routes that don't require any authentication
 	// These endpoints are publicly accessible
 	router.Get("/email/verify", kit.Handler(HandleEmailVerify))

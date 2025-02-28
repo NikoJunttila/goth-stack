@@ -1,9 +1,7 @@
 package helloworld
 
 import (
-	"fmt"
 	"gothstack/app/db"
-	"math/rand/v2"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,10 +12,7 @@ const (
 	HelloworldNewEvent = "helloworld.newEvent"
 )
 
-type HelloWorld struct {
-	Message string
-}
-
+// Gorm looks for a table named helloworld_messages
 type HelloworldMessage struct {
 	gorm.Model
 
@@ -27,8 +22,6 @@ type HelloworldMessage struct {
 }
 
 func createMessage(message string) (HelloworldMessage, error) {
-	fmt.Println(message)
-	message = fmt.Sprintf("Hello world! %d", rand.IntN(100))
 	hello := HelloworldMessage{
 		Message: message,
 	}
@@ -40,3 +33,8 @@ func listMessages() ([]HelloworldMessage, error) {
 	result := db.Get().Order("created_at desc").Find(&messages)
 	return messages, result.Error
 }
+
+// using goose to init table
+/* func initialize() {
+	db.Get().AutoMigrate(&HelloworldMessage{})
+} */

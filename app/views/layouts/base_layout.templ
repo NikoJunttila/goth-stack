@@ -8,7 +8,7 @@ var (
 
 templ BaseLayout() {
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="en" x-data="{theme: 'dark'}" :class="theme">
 		<head>
 			<title>{ title }</title>
 			<link rel="icon" type="image/x-icon" href="/public/favicon.ico"/>
@@ -22,7 +22,7 @@ templ BaseLayout() {
 			<!-- HTMX -->
 			<script src="https://unpkg.com/htmx.org@1.9.9" defer></script>
 		</head>
-		<body hx-boost="true" x-data="{theme: 'dark'}" :class="theme" lang="en">
+		<body hx-boost="true">
 			{ children... }
 		</body>
 	</html>

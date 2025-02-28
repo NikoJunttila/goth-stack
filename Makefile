@@ -44,11 +44,11 @@ server:
 
 # run tailwindcss to generate the styles.css bundle in watch mode.
 watch-assets:
-	@npx tailwindcss -i app/assets/app.css -o ./public/assets/styles.css --watch   
+	@npx tailwindcss -i app/assets/app.css -o ./public/assets/styles.css --watch=forever   
 
 # run esbuild to generate the index.js bundle in watch mode.
 watch-esbuild:
-	@npx esbuild app/assets/index.js --bundle --outdir=public/assets --watch
+	@npx esbuild app/assets/index.js --bundle --outdir=public/assets --watch=forever
 
 # watch for any js or css change in the assets/ folder, then reload the browser via templ proxy.
 sync_assets:
