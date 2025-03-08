@@ -1,0 +1,68 @@
+package delivery
+
+import (
+    "gothstack/app/views/layouts"
+    "gothstack/app/views/components"
+	v "github.com/anthdm/superkit/validate"
+)
+
+templ ProfileShow(formValues UserProfileFormValues) {
+	@layouts.App() {
+		<div class="mt-32 flex flex-col gap-12">
+			<div class="flex flex-col gap-2">
+				<div class="flex gap-4">
+					<a href="/" class="text-sm underline">back to home</a>
+					<button hx-delete="/logout" class="text-sm underline">sign me out</button>
+				</div>
+			</div>
+			@UserProfileForm(formValues, v.Errors{})
+		</div>
+	}
+}
+templ UserProfileForm(values UserProfileFormValues, errors v.Errors) {
+            <form hx-post="/create-profile" class="flex max-w-md mx-auto mt-10 flex-col gap-6">
+            <h1 class="text-2xl font-bold mb-6">User Profile</h1>
+            <!-- Display general error if present -->
+            if errors.Has("general") {
+                <div class="text-red-500 mb-4">{ errors.Get("general")[0] }</div>
+            }
+                <!-- Address -->
+                <div class="flex flex-col gap-2">
+                    <label class="block text-sm font-medium">Address</label>
+                    <input type="text" name="address" value={values.Address} { components.InputAttrs(errors.Has("address"))... } />
+                    if errors.Has("address") {
+                        <div class="text-red-500 text-xs">{ errors.Get("address")[0] }</div>
+                    }
+                </div>
+                <!-- Phone Number -->
+                <div class="flex flex-col gap-2">
+                    <label class="block text-sm font-medium">Phone Number</label>
+                    <input type="text" name="phone" value={values.Phone} { components.InputAttrs(errors.Has("phone"))... } />
+                    if errors.Has("phone") {
+                        <div class="text-red-500 text-xs">{ errors.Get("phone")[0] }</div>
+                    }
+                </div>
+                <!-- Delivery Notes -->
+                <div class="flex flex-col gap-2">
+                    <label class="block text-sm font-medium">Delivery Notes</label>
+                    <textarea id="delivery_notes" name="delivery_notes" { components.InputAttrs(errors.Has("delivery_notes"))... }>{values.DeliveryNotes}</textarea>
+                    if errors.Has("delivery_notes") {
+                        <div class="text-red-500 text-xs">{ errors.Get("delivery_notes")[0] }</div>
+                    }
+                </div>
+                <!-- Dietary Notes -->
+                <div class="flex flex-col gap-2">
+                    <label class="block text-sm font-medium">Dietary Notes</label>
+                    <textarea id="dietary_notes" name="dietary_notes" { components.InputAttrs(errors.Has("dietary_notes"))... }>{values.DietaryNotes}</textarea>
+                    if errors.Has("dietary_notes") {
+                        <div class="text-red-500 text-xs">{ errors.Get("dietary_notes")[0] }</div>
+                    }
+                </div>
+                <!-- Dietary Restrictions -->
+                
+                <!-- Submit Button -->
+                <button type="submit" { components.ButtonAttrs()... }>
+                    Save Profile
+                </button>
+            </form>
+    }

@@ -5,6 +5,7 @@ type AuthUser struct {
 	ID       uint
 	Email    string
 	LoggedIn bool
+	Role     string
 }
 
 // Check should return true if the user is authenticated.

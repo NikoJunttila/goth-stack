@@ -1,0 +1,177 @@
+package delivery
+
+import (
+    "gothstack/app/views/layouts"
+    "gothstack/app/views/components"
+    v "github.com/anthdm/superkit/validate"
+    "strconv"
+    "fmt"
+)
+
+templ MealOptionShow(formValues MealOptionFormValues, dietaryRestrictions []DietaryRestriction) {
+    @layouts.App() {
+        <div class="mt-32 flex flex-col gap-12">
+            <div class="flex flex-col gap-2">
+                <div class="flex gap-4">
+                    <a href="/" class="text-sm underline">back to home</a>
+                    <a href="/meal-plans" class="text-sm underline">all meal plans</a>
+                    if formValues.MealPlanID != "" {
+                        <a href={templ.SafeURL("/meal-plans/" + formValues.MealPlanID)} class="text-sm underline">back to meal plan</a>
+                    }
+                </div>
+            </div>
+            @MealOptionForm(formValues, dietaryRestrictions, v.Errors{})
+        </div>
+    }
+}
+
+templ MealOptionForm(values MealOptionFormValues, dietaryRestrictions []DietaryRestriction, errors v.Errors) {
+    <form hx-post="/create-meal-option" class="flex max-w-md mx-auto mt-10 flex-col gap-6">
+        <h1 class="text-2xl font-bold mb-6">Create Meal Option</h1>
+        
+        <!-- Display success message if present -->
+        if values.Success != "" {
+            <div class="text-green-500 mb-4">{ values.Success }</div>
+        }
+        
+        <!-- Display general error if present -->
+        if errors.Has("general") {
+            <div class="text-red-500 mb-4">{ errors.Get("general")[0] }</div>
+        }
+        
+        <!-- Hidden Meal Plan ID -->
+        <input type="hidden" name="meal_plan_id" value={values.MealPlanID} />
+        
+        <!-- Name -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Name</label>
+            <input type="text" name="name" value={values.Name} { components.InputAttrs(errors.Has("name"))... } />
+            if errors.Has("name") {
+                <div class="text-red-500 text-xs">{ errors.Get("name")[0] }</div>
+            }
+        </div>
+        
+        <!-- Description -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Description</label>
+            <textarea name="description" rows="3" { components.InputAttrs(errors.Has("description"))... }>{ values.Description }</textarea>
+            if errors.Has("description") {
+                <div class="text-red-500 text-xs">{ errors.Get("description")[0] }</div>
+            }
+        </div>
+        
+        <!-- Price -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Price</label>
+            <input type="number" name="price" value={values.Price} step="0.01" min="0" { components.InputAttrs(errors.Has("price"))... } />
+            if errors.Has("price") {
+                <div class="text-red-500 text-xs">{ errors.Get("price")[0] }</div>
+            }
+        </div>
+        
+        <!-- Nutritional Info -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Nutritional Information</label>
+            <textarea name="nutritional_info" rows="4" { components.InputAttrs(errors.Has("nutritional_info"))... }>{ values.NutritionalInfo }</textarea>
+            if errors.Has("nutritional_info") {
+                <div class="text-red-500 text-xs">{ errors.Get("nutritional_info")[0] }</div>
+            }
+        </div>
+        
+        <!-- Max Daily Quantity -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Maximum Daily Quantity</label>
+            <input type="number" name="max_daily_quantity" value={values.MaxDailyQuantity} min="0" { components.InputAttrs(errors.Has("max_daily_quantity"))... } />
+            if errors.Has("max_daily_quantity") {
+                <div class="text-red-500 text-xs">{ errors.Get("max_daily_quantity")[0] }</div>
+            }
+        </div>
+        
+        <!-- Dietary Restrictions -->
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium">Dietary Restrictions</label>
+            <div class="grid grid-cols-2 gap-2">
+                for _, restriction := range dietaryRestrictions {
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id={ "restriction_" + strconv.FormatUint(uint64(restriction.ID), 10) }
+                            name="dietary_restrictions" 
+                            value={ strconv.FormatUint(uint64(restriction.ID), 10) }
+                            class="mr-2"
+                        />
+                        <label for={ "restriction_" + strconv.FormatUint(uint64(restriction.ID), 10) } class="text-sm">
+                            { restriction.Name }
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <!-- Submit Button -->
+        <button type="submit" { components.ButtonAttrs()... }>
+            Create Meal Option
+        </button>
+    </form>
+}
+
+templ MealOptionList(options []MealOption, mealPlanID string) {
+    @layouts.App() {
+        <div class="mt-32 flex flex-col gap-12 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Meal Options</h1>
+                <a href={templ.SafeURL("/meal-plans/" + mealPlanID + "/options/new")} class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    Add New Option
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Daily</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        for _, option := range options {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ option.Name }</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    <div class="max-w-xs truncate">{ option.Description }</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ fmt.Sprintf("%.2f", option.Price) }</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ strconv.Itoa(option.MaxDailyQuantity) }</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    if option.IsAvailable {
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Yes</span>
+                                    } else {
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">No</span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a href={templ.SafeURL("/meal-options/" + strconv.FormatUint(uint64(option.ID), 10) + "/edit")} class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    <button 
+                                        hx-delete={"/meal-options/" + strconv.FormatUint(uint64(option.ID), 10)} 
+                                        hx-confirm="Are you sure you want to delete this meal option?"
+                                        class="text-red-600 hover:text-red-900">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        if len(options) == 0 {
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No meal options found</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

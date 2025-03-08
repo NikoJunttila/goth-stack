@@ -39,6 +39,7 @@ type User struct {
 	FirstName       string
 	LastName        string
 	PasswordHash    string
+	Role            string
 	EmailVerifiedAt sql.NullTime
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -53,6 +54,7 @@ func createUserFromFormValues(values SignupFormValues) (User, error) {
 		Email:        values.Email,
 		FirstName:    values.FirstName,
 		LastName:     values.LastName,
+		Role:         "user",
 		PasswordHash: string(hash),
 	}
 	result := db.Get().Create(&user)
