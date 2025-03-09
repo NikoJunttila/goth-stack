@@ -7,6 +7,7 @@ import (
 
 	"github.com/anthdm/superkit/kit"
 	v "github.com/anthdm/superkit/validate"
+	"github.com/go-chi/chi/v5"
 )
 
 // Validation schema for meal option
@@ -34,11 +35,11 @@ type MealOptionFormValues struct {
 // GET handler to display the meal option form
 func handleMealOptionForm(kit *kit.Kit) error {
 	// Get mealPlanID from URL parameters or query string
-	mealPlanID := "1"
+	idStr := chi.URLParam(kit.Request, "id")
 
 	// Prepare empty form values
 	values := MealOptionFormValues{
-		MealPlanID: mealPlanID,
+		MealPlanID: idStr,
 	}
 
 	// Fetch available dietary restrictions for the form
@@ -54,7 +55,7 @@ func handleMealOptionForm(kit *kit.Kit) error {
 
 // POST handler to process the meal option form submission
 func handlePostMealOption(kit *kit.Kit) error {
-	// Parse and validate form values
+
 	var values MealOptionFormValues
 	errors, ok := v.Request(kit.Request, &values, mealOptionSchema)
 	if !ok {
@@ -64,8 +65,8 @@ func handlePostMealOption(kit *kit.Kit) error {
 	}
 
 	// Convert form values to appropriate types
-	mealPlanID, err := strconv.ParseUint(values.MealPlanID, 10, 64)
-	if err != nil {
+	mealPlanID := values.MealPlanID
+	if mealPlanID == "" {
 		errors.Add("MealPlanID", "Invalid meal plan ID")
 		restrictions, _ := GetAllDietaryRestrictions()
 		return kit.Render(MealOptionForm(values, restrictions, errors))
@@ -96,8 +97,12 @@ func handlePostMealOption(kit *kit.Kit) error {
 	}
 
 	// Create the meal option
+	mealID, err := strconv.ParseUint(mealPlanID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid meal plan ID: %w", err)
+	}
 	mealOption, err := CreateMealOption(
-		uint(mealPlanID),
+		uint(mealID),
 		values.Name,
 		values.Description,
 		price,
@@ -120,10 +125,9 @@ func handlePostMealOption(kit *kit.Kit) error {
 }
 func handleShowMeals(kit *kit.Kit) error {
 	// Get mealPlanID from URL parameters
-	mealPlanIDStr := "1"
-	mealPlanID, err := strconv.ParseUint(mealPlanIDStr, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid meal plan ID: %w", err)
+	mealPlanID := chi.URLParam(kit.Request, "id")
+	if mealPlanID == "" {
+		return fmt.Errorf("missing meal plan ID")
 	}
 
 	// Fetch all meal options for the given meal plan ID
@@ -132,5 +136,5 @@ func handleShowMeals(kit *kit.Kit) error {
 		return fmt.Errorf("error fetching meal options: %w", err)
 	}
 
-	return kit.Render(MealOptionList(options, mealPlanIDStr))
+	return kit.Render(MealOptionList(options, mealPlanID))
 }

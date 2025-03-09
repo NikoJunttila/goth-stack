@@ -1,203 +1,212 @@
 package delivery
 
 import (
-    "gothstack/app/views/layouts"
-    "gothstack/app/views/components"
-    v "github.com/anthdm/superkit/validate"
-    "strconv"
+	v "github.com/anthdm/superkit/validate"
+	"gothstack/app/views/components"
+	"gothstack/app/views/layouts"
+	"strconv"
 )
 
 templ MealPlanShow(formValues MealPlanFormValues, centers []MealCenter) {
-    @layouts.App() {
-        <div class="flex flex-col gap-12">
-            <div class="flex flex-col gap-2">
-                <div class="flex gap-4">
-                    <a href="/" class="text-sm underline">back to home</a>
-                    <a href="/meal-plans" class="text-sm underline">all meal plans</a>
-                    <a href="/meal-centers" class="text-sm underline">meal centers</a>
-                </div>
-            </div>
-            @MealPlanForm(formValues, v.Errors{}, centers)
-        </div>
-    }
+	@layouts.App() {
+		<div class="flex flex-col gap-12">
+			<div class="flex flex-col gap-2">
+				<div class="flex gap-4">
+					<a href="/" class="text-sm underline">back to home</a>
+					<a href="/meal-plans" class="text-sm underline">all meal plans</a>
+					<a href="/meal-centers" class="text-sm underline">meal centers</a>
+				</div>
+			</div>
+			@MealPlanForm(formValues, v.Errors{}, centers)
+		</div>
+	}
 }
 
 templ MealPlanForm(values MealPlanFormValues, errors v.Errors, centers []MealCenter) {
-    <form hx-post="/meal-plans/new" class="flex max-w-md mx-auto mt-10 flex-col gap-6">
-        <h1 class="text-2xl font-bold mb-6">Create Meal Plan</h1>
-        
-        <!-- Display success message if present -->
-        if values.Success != "" {
-            <div class="text-green-500 mb-4">{ values.Success }</div>
-        }
-        
-        <!-- Display general error if present -->
-        if errors.Has("general") {
-            <div class="text-red-500 mb-4">{ errors.Get("general")[0] }</div>
-        }
-        
-        <!-- Meal Center Selection -->
-        <div class="flex flex-col gap-2">
-            <label class="block text-sm font-medium">Meal Center</label>
-            <select name="meal_center_id" { components.InputAttrs(errors.Has("meal_center_id"))... }>
-                <option value="">Select a meal center</option>
-                for _, center := range centers {
-                    <option 
-                        value={strconv.FormatUint(uint64(center.ID), 10)} 
-                        selected?={center.ID == values.MealCenterID}
-                    >
-                        { center.Name }
-                    </option>
-                }
-            </select>
-            if errors.Has("meal_center_id") {
-                <div class="text-red-500 text-xs">{ errors.Get("meal_center_id")[0] }</div>
-            }
-        </div>
-        
-        <!-- Name -->
-        <div class="flex flex-col gap-2">
-            <label class="block text-sm font-medium">Plan Name</label>
-            <input type="text" name="name" value={values.Name} { components.InputAttrs(errors.Has("name"))... } />
-            if errors.Has("name") {
-                <div class="text-red-500 text-xs">{ errors.Get("name")[0] }</div>
-            }
-        </div>
-        
-        <!-- Description -->
-        <div class="flex flex-col gap-2">
-            <label class="block text-sm font-medium">Description</label>
-            <textarea name="description" rows="3" { components.InputAttrs(errors.Has("description"))... }>{ values.Description }</textarea>
-            if errors.Has("description") {
-                <div class="text-red-500 text-xs">{ errors.Get("description")[0] }</div>
-            }
-        </div>
-        
-        <!-- Start Date -->
-        <div class="flex flex-col gap-2">
-            <label class="block text-sm font-medium">Start Date</label>
-            <input type="date" name="meal_date" value={values.MealDate} { components.InputAttrs(errors.Has("start_date"))... } />
-            if errors.Has("start_date") {
-                <div class="text-red-500 text-xs">{ errors.Get("start_date")[0] }</div>
-            }
-        </div>
-        
-        <!-- Submit Button -->
-        <button type="submit" { components.ButtonAttrs()... }>
-            Create Meal Plan
-        </button>
-    </form>
+	<form hx-post="/meal-plans/new" class="flex max-w-md mx-auto mt-10 flex-col gap-6">
+		<h1 class="text-2xl font-bold mb-6">Create Meal Plan</h1>
+		<!-- Display success message if present -->
+		if values.Success != "" {
+			<div class="text-green-500 mb-4">{ values.Success }</div>
+		}
+		<!-- Display general error if present -->
+		if errors.Has("general") {
+			<div class="text-red-500 mb-4">{ errors.Get("general")[0] }</div>
+		}
+		<!-- Meal Center Selection -->
+		<div class="flex flex-col gap-2">
+			<label class="block text-sm font-medium">Meal Center</label>
+			<select name="meal_center_id" { components.InputAttrs(errors.Has("meal_center_id"))... }>
+				<option value="">Select a meal center</option>
+				for _, center := range centers {
+					<option
+						value={ strconv.FormatUint(uint64(center.ID), 10) }
+						selected?={ center.ID == values.MealCenterID }
+					>
+						{ center.Name }
+					</option>
+				}
+			</select>
+			if errors.Has("meal_center_id") {
+				<div class="text-red-500 text-xs">{ errors.Get("meal_center_id")[0] }</div>
+			}
+		</div>
+		<!-- Name -->
+		<div class="flex flex-col gap-2">
+			<label class="block text-sm font-medium">Plan Name</label>
+			<input type="text" name="name" value={ values.Name } { components.InputAttrs(errors.Has("name"))... }/>
+			if errors.Has("name") {
+				<div class="text-red-500 text-xs">{ errors.Get("name")[0] }</div>
+			}
+		</div>
+		<!-- Description -->
+		<div class="flex flex-col gap-2">
+			<label class="block text-sm font-medium">Description</label>
+			<textarea name="description" rows="3" { components.InputAttrs(errors.Has("description"))... }>{ values.Description }</textarea>
+			if errors.Has("description") {
+				<div class="text-red-500 text-xs">{ errors.Get("description")[0] }</div>
+			}
+		</div>
+		<!-- Start Date -->
+		<div class="flex flex-col gap-2">
+			<label class="block text-sm font-medium">Start Date</label>
+			<input type="date" name="meal_date" value={ values.MealDate } { components.InputAttrs(errors.Has("start_date"))... }/>
+			if errors.Has("start_date") {
+				<div class="text-red-500 text-xs">{ errors.Get("start_date")[0] }</div>
+			}
+		</div>
+		<!-- Submit Button -->
+		<button type="submit" { components.ButtonAttrs()... }>
+			Create Meal Plan
+		</button>
+	</form>
 }
 
 templ MealPlanList(plans []DaysMeals, centers []MealCenter) {
-    @layouts.App() {
-        <div class="mt-32 flex flex-col gap-12 max-w-4xl mx-auto">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Meal Plans</h1>
-                <a href="/meal-plans/new" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                    Add New Plan
-                </a>
-            </div>
-            
-            <!-- Filter by Meal Center -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <form hx-get="/meal-plans" hx-trigger="change from:#center-filter" class="flex gap-4 items-end">
-                    <div class="flex flex-col gap-2 w-64">
-                        <label for="center-filter" class="block text-sm font-medium">Filter by Meal Center</label>
-                        <select id="center-filter" name="meal_center_id" { components.InputAttrs(false)... }>
-                            <option value="">All Centers</option>
-                            for _, center := range centers {
-                                <option value={strconv.FormatUint(uint64(center.ID), 10)}>{ center.Name }</option>
-                            }
-                        </select>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal Center</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        for _, plan := range plans {
-                            
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <a href="/meal-plans/{ plan.ID }" class="text-blue-500 hover:text-blue-600">
-                                { plan.Name }
-                                </a>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    { plan.MealDate.Format("Jan 2, 2006")}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    if plan.IsActive {
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Active
-                                        </span>
-                                    } else {
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            Inactive
-                                        </span>
-                                    }
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                </td>
-                            </tr>
-                        }
-                        if len(plans) == 0 {
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No meal plans found</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    }
+	@layouts.App() {
+		<div class="mt-32 flex flex-col gap-12 max-w-4xl mx-auto">
+			<div class="flex justify-between items-center">
+				<h1 class="text-2xl font-bold">Meal Plans</h1>
+				<a href="/meal-plans/new" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+					Add New Plan
+				</a>
+			</div>
+			<!-- Filter by Meal Center -->
+			<div class="bg-gray-50 p-4 rounded-lg">
+				<form hx-get="/meal-plans" hx-trigger="change from:#center-filter" hx-target="#mealPlanList" class="flex gap-4 items-end">
+					<div class="flex flex-col gap-2 w-64">
+						<label for="center-filter" class="block text-sm font-medium">Filter by Meal Center</label>
+						<select id="center-filter" name="meal_center_id" { components.InputAttrs(false)... }>
+							<option value="">All Centers</option>
+							for _, center := range centers {
+								<option value={ strconv.FormatUint(uint64(center.ID), 10) }>{ center.Name }</option>
+							}
+						</select>
+					</div>
+				</form>
+			</div>
+			<div id="mealPlanList" class="overflow-x-auto">
+				@MealPlanTable(plans)
+			</div>
+		</div>
+	}
 }
 
+templ ShowAllMealsInDay(meals []MealOption, day DaysMeals) {
+	@layouts.App() {
+		<div class="mt-32 flex flex-col gap-12 max-w-4xl mx-auto">
+			<div class="flex justify-between items-center">
+				<h1 class="text-2xl font-bold">Meals for { day.Name }</h1>
+				<a href="/deliveries" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+					deliveries
+				</a>
+				<a href={ templ.SafeURL("/create-meal-option/" + strconv.FormatUint(uint64(day.ID), 10)) } class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+					Add New Meal
+				</a>
+				<button
+					hx-get={"/orders-for-day/" + strconv.FormatUint(uint64(day.ID), 10)}
+					hx-trigger="click"
+					class="bg-green-400 rounded-md text-red-500 hover:text-red-600"
+				>Print meals</button> 
+			</div>
+			<div class="overflow-x-auto">
+				<table class="min-w-full divide-y divide-gray-200">
+					<thead class="bg-gray-50">
+						<tr>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal Center</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="bg-white divide-y divide-gray-200">
+						for _, meal := range meals {
+							<tr>
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ meal.Name }</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">idk yet</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ strconv.FormatFloat(meal.Price, 'f', 2, 64) }€</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+									<a href={ templ.SafeURL("/meals/" + strconv.FormatUint(uint64(meal.ID), 10) + "/edit") } class="text-blue-500 hover:text-blue-600">Edit</a>
+									<a href={ templ.SafeURL("/meals/" + strconv.FormatUint(uint64(meal.ID), 10) + "/delete") } class="text-red-500 hover:text-red-600">Delete</a>
+									<button
+										hx-post={ "/meals/" + strconv.FormatUint(uint64(meal.ID), 10) + "/buy" }
+										hx-trigger="click"
+										class="bg-green-400 rounded-md text-red-500 hover:text-red-600"
+									>
+										Buy
+									</button>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	}
+}
 
-templ ShowAllMealsInDay(meals []MealOption, day string) {
-    @layouts.App() {
-        <div class="mt-32 flex flex-col gap-12 max-w-4xl mx-auto">
-            <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Meals for { day }</h1>
-                <a href="/meals/new" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                    Add New Meal
-                </a>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal Center</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        for _, meal := range meals {
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ meal.Name }</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    // <a href={"/meals/" + strconv.FormatUint(uint64(meal.ID), 10) + "/edit"} class="text-blue-500 hover:text-blue-600">Edit</a>
-                                    // <a href={"/meals/" + strconv.FormatUint(uint64(meal.ID), 10) + "/delete"} class="text-red-500 hover:text-red-600">Delete</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    }
+templ MealPlanTable(plans []DaysMeals) {
+	<table class="min-w-full divide-y divide-gray-200">
+		<thead class="bg-gray-50">
+			<tr>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal Center</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+			</tr>
+		</thead>
+		<tbody class="bg-white divide-y divide-gray-200">
+			for _, plan := range plans {
+				<tr>
+					<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+						<a href={ templ.SafeURL("/meal-plans/" + strconv.FormatUint(uint64(plan.ID), 10)) } class="text-blue-500 hover:text-blue-600">
+							{ plan.Name }
+						</a>
+					</td>
+					<td>{plan.MealCenter.Name}</td>
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+						{ plan.MealDate.Format("Jan 2, 2006") }
+					</td>
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+						if plan.IsActive {
+							<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+								Active
+							</span>
+						} else {
+							<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+								Inactive
+							</span>
+						}
+					</td>
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+				</tr>
+			}
+			if len(plans) == 0 {
+				<tr>
+					<td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No meal plans found</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }

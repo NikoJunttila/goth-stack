@@ -1,10 +1,16 @@
 package delivery
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gothstack/app/db"
 	"gothstack/plugins/auth"
+	"log"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -168,10 +174,83 @@ func CreateMealOption(
 
 	return mealOption, nil
 }
+
 func fetchLongLat(address string) (float64, float64, error) {
-	// Use a geocoding service to get the latitude and longitude
-	fmt.Println(address)
-	return 0, 0, nil
+	log.Printf("Starting fetchLongLat for address: %s", address)
+	if strings.TrimSpace(address) == "" {
+		log.Printf("Empty address provided")
+		return 0, 0, errors.New("empty address provided")
+	}
+
+	// URL encode the address
+	encodedAddress := url.QueryEscape(address)
+	log.Printf("Encoded address: %s", encodedAddress)
+	requestURL := fmt.Sprintf(
+		"https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1",
+		encodedAddress,
+	)
+	log.Printf("Constructed request URL: %s", requestURL)
+
+	// Add a user agent (required by Nominatim's terms of use)
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		log.Printf("Error creating request: %v", err)
+		return 0, 0, fmt.Errorf("error creating request: %w", err)
+	}
+
+	// Add required headers
+	req.Header.Set("User-Agent", "YourAppName/1.0")
+	log.Printf("Added User-Agent header")
+
+	// Make the request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error making request to OpenStreetMap API: %v", err)
+		return 0, 0, fmt.Errorf("error making request to OpenStreetMap API: %w", err)
+	}
+	defer resp.Body.Close()
+	log.Printf("Received response with status code: %d", resp.StatusCode)
+
+	// Check status
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("OpenStreetMap API returned non-200 status: %d", resp.StatusCode)
+		return 0, 0, fmt.Errorf("OpenStreetMap API returned non-200 status: %d", resp.StatusCode)
+	}
+
+	// Parse the response
+	var results []struct {
+		Lat string `json:"lat"`
+		Lon string `json:"lon"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+		log.Printf("Error parsing OpenStreetMap response: %v", err)
+		return 0, 0, fmt.Errorf("error parsing OpenStreetMap response: %w", err)
+	}
+	log.Printf("Parsed response: %+v", results)
+
+	if len(results) == 0 {
+		log.Printf("No coordinates found for the provided address")
+		return 0, 0, errors.New("no coordinates found for the provided address")
+	}
+
+	// Convert string coordinates to float64
+	lat, err := strconv.ParseFloat(results[0].Lat, 64)
+	if err != nil {
+		log.Printf("Error parsing latitude: %v", err)
+		return 0, 0, fmt.Errorf("error parsing latitude: %w", err)
+	}
+	log.Printf("Parsed latitude: %f", lat)
+
+	lng, err := strconv.ParseFloat(results[0].Lon, 64)
+	if err != nil {
+		log.Printf("Error parsing longitude: %v", err)
+		return 0, 0, fmt.Errorf("error parsing longitude: %w", err)
+	}
+	log.Printf("Parsed longitude: %f", lng)
+
+	log.Printf("Returning coordinates: longitude=%f, latitude=%f", lng, lat)
+	return lng, lat, nil
 }
 
 // CreateUserProfile creates or updates a user profile with delivery information
@@ -184,7 +263,11 @@ func CreateUserProfile(
 	// Check if profile already exists
 	var profile UserProfile
 	result := db.Get().Where("user_id = ?", userID).First(&profile)
-	long, lat, _ := fetchLongLat(address)
+	long, lat, err := fetchLongLat(address)
+	if err != nil {
+		return UserProfile{}, err
+	}
+	log.Printf("updating prof longitude=%f, latitude=%f", long, lat)
 	// Create new profile or update
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -192,8 +275,8 @@ func CreateUserProfile(
 			profile = UserProfile{
 				UserID:        userID,
 				Address:       address,
-				Latitude:      long,
-				Longitude:     lat,
+				Latitude:      lat,
+				Longitude:     long,
 				PhoneNumber:   phone,
 				DeliveryNotes: deliveryNotes,
 				DietaryNotes:  dietaryNotes,
@@ -233,8 +316,8 @@ func CreateUserProfile(
 		// Update existing profile
 		updates := map[string]interface{}{
 			"address":        address,
-			"latitude":       0,
-			"longitude":      0,
+			"latitude":       lat,
+			"longitude":      long,
 			"phone_number":   phone,
 			"delivery_notes": deliveryNotes,
 			"dietary_notes":  dietaryNotes,

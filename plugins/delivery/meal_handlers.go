@@ -43,14 +43,18 @@ func handlePostMealCenter(kit *kit.Kit) error {
 		fmt.Println(errors)
 		return kit.Render(MealCenterForm(values, errors))
 	}
-
+	long, lat, err := fetchLongLat(values.Address)
+	if err != nil {
+		errors.Add("general", "Failed to fetch long lat")
+		return kit.Render(MealCenterForm(values, errors))
+	}
 	// Create the meal center
 	center, err := CreateMealCenter(
 		values.Name,
 		values.Address,
 		values.Phone,
-		5,
-		5,
+		lat,
+		long,
 	)
 
 	if err != nil {

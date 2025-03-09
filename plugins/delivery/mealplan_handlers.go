@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"gothstack/app/db"
+	"strconv"
 	"time"
 
 	"github.com/anthdm/superkit/kit"
 	v "github.com/anthdm/superkit/validate"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
 
@@ -96,11 +98,18 @@ func handlePostMealPlan(kit *kit.Kit) error {
 // Function to get a meal plan by ID
 func handleGetMealPlan(kit *kit.Kit) error {
 	// Get ID from URL parameters
-	id := 1
+	idStr := chi.URLParam(kit.Request, "id")
+
+	// Convert string ID to int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return fmt.Errorf("invalid ID format: %w", err)
+	}
+
 	fmt.Println("fetching meal plans")
 	var plan DaysMeals
 	// Make sure to use Preload properly
-	err := db.Get().Preload("MealCenter").First(&plan, id).Error
+	err = db.Get().Preload("MealCenter").First(&plan, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			fmt.Println(err)
@@ -114,27 +123,29 @@ func handleGetMealPlan(kit *kit.Kit) error {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(mealOptions)
-	return kit.Render(ShowAllMealsInDay(mealOptions, "friday"))
+	fmt.Println(plan)
+	return kit.Render(ShowAllMealsInDay(mealOptions, plan))
 }
 
 // Function to list all meal plans
 func handleListMealPlans(kit *kit.Kit) error {
 	var plans []DaysMeals
-	if err := db.Get().Preload("MealCenter").Find(&plans).Error; err != nil {
-		return err
-	}
+	query := db.Get().Preload("MealCenter")
 
-	// Filter by meal center if specified
-	var filteredPlans []DaysMeals
-	var centerID uint = 1
-
-	for _, plan := range plans {
-		if plan.MealCenterID == centerID {
-			filteredPlans = append(filteredPlans, plan)
+	// Parse the center ID from the request
+	centerIDStr := kit.Request.FormValue("meal_center_id")
+	if centerIDStr != "" {
+		var centerID uint64
+		centerID, err := strconv.ParseUint(centerIDStr, 10, 64)
+		if err == nil && centerID > 0 {
+			query = query.Where("meal_center_id = ?", centerID)
 		}
 	}
-	plans = filteredPlans
+
+	// Execute the query with any filters applied
+	if err := query.Find(&plans).Error; err != nil {
+		return err
+	}
 
 	// Get meal centers for filtering dropdown
 	var centers []MealCenter
@@ -142,5 +153,12 @@ func handleListMealPlans(kit *kit.Kit) error {
 		return err
 	}
 
+	// Check if this is an HTMX request
+	/* 	if kit.Request.Header.Get("HX-Request") == "true" {
+		// Return only the table component
+		return kit.Render(MealPlanTable(plans))
+	} */
+
+	// Return the full page
 	return kit.Render(MealPlanList(plans, centers))
 }
